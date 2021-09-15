@@ -37,9 +37,39 @@ class Teacher(Human):
         db_table = 'teachers'
 
 
+class StudentGroup(Model):
+
+    group = IntegerField()
+    student = IntegerField()
+
+    class Meta:
+        database = db
+        db_table = 'student-group'
+
+
+class GroupSubject(Model):
+
+    group = IntegerField()
+    subject = IntegerField()
+
+    class Meta:
+        database = db
+        db_table = 'group-subject'
+
+
+class StudentSubject(Model):
+
+    student = IntegerField()
+    subject = IntegerField()
+
+    class Meta:
+        database = db
+        db_table = 'student-subject'
+
+
 class Student(Human):
 
-    add_subjects = ForeignKeyField(Subject)
+    add_subjects = ManyToManyField(Subject)
     headman = BooleanField()
     rating = FloatField()
 
@@ -49,10 +79,10 @@ class Student(Human):
 
 class Group(BaseModel):
 
-    students = ForeignKeyField(Student)
+    students = ManyToManyField(Student)
     headman = ForeignKeyField(Student)
     curator = ForeignKeyField(Teacher)
-    main_subjects = ForeignKeyField(Subject)
+    main_subjects = ManyToManyField(Subject)
     title = CharField()
     end_date = DateField()
 

@@ -80,17 +80,22 @@ def view(table):
         print('-' * 197)
         all_table = Group.select().where(Group.id > 0)
         for i in all_table:
-            print(str(i.id).ljust(5), str(i.title).ljust(60), 'OOO'.ljust(35), str(i.headman.full_name).ljust(35),
-                  str(i.curator.full_name).ljust(35), 'OOO'.ljust(7), str(i.end_date).ljust(12))
+            print(str(i.id).ljust(5), str(i.title).ljust(60), '000'.ljust(35),
+                  str(i.headman.full_name).ljust(35), str(i.curator.full_name).ljust(35), '000'.ljust(7),
+                  str(i.end_date).ljust(12))
 
     if table == 2:
         print('id'.ljust(5), 'Full Name'.ljust(35), 'Birth Date'.ljust(12), 'Additional Subjects'.ljust(40),
-              'Headman'.ljust(7), 'Average Rating'.ljust(14))
-        print('-' * 118)
+              'Headman'.ljust(10), 'Average Rating'.ljust(14))
+        print('-' * 121)
         all_table = Student.select().where(Student.id > 0)
         for i in all_table:
-            print(str(i.id).ljust(5), str(i.full_name).ljust(35), str(i.birth_date).ljust(12), 'OOO'.ljust(40),
-                  'OOO'.ljust(7), str(i.rating).ljust(14))
+            if i.headman:
+                head_group = 'Headman'
+            else:
+                head_group = ' '
+            print(str(i.id).ljust(5), str(i.full_name).ljust(35), str(i.birth_date).ljust(12), str(i).ljust(40),
+                  str(head_group).ljust(10), str(i.rating).ljust(14))
 
     if table == 3:
         print('id'.ljust(5), 'Full Name'.ljust(35), 'Birth Date'.ljust(12), 'Subject Title'.ljust(55))
@@ -140,7 +145,10 @@ def redirect(table, action):
 
 def main():
 
-    greetings()
-    redirect(table_choice(), action_choice())
+    with db:
+        db.create_tables([Human, Subject, Student, Group, StudentSubject, StudentGroup, GroupSubject, Teacher])
+    # greetings()
+    # redirect(table_choice(), action_choice())
+
 
 main()
