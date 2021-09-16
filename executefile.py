@@ -204,7 +204,24 @@ def view(table):
 
 
 def add(table):
-    pass
+    if table == 1:
+        pass
+
+    if table == 2:
+        pass
+
+    if table == 3:
+        print('\nATTENTION: model Teacher has fields: Full Name, Date of Birth, ID of the taught Subject\n')
+        full_name = input('Enter the full name of the Teacher: ')
+        birth_date = int(input('Enter the Teacher date of birth in the format year/month/day: '))
+        subject = int(input('Enter the id of the taught subject: '))
+        Teacher.create(full_name=full_name, birth_date=birth_date, subject=subject).save()
+
+    if table == 4:
+        pass
+
+    if table == 5:
+        pass
 
 
 def change(table):
