@@ -37,39 +37,9 @@ class Teacher(Human):
         db_table = 'teachers'
 
 
-class StudentGroup(Model):
-
-    group = IntegerField()
-    student = IntegerField()
-
-    class Meta:
-        database = db
-        db_table = 'student-group'
-
-
-class GroupSubject(Model):
-
-    group = IntegerField()
-    subject = IntegerField()
-
-    class Meta:
-        database = db
-        db_table = 'group-subject'
-
-
-class StudentSubject(Model):
-
-    student = IntegerField()
-    subject = IntegerField()
-
-    class Meta:
-        database = db
-        db_table = 'student-subject'
-
-
 class Student(Human):
 
-    add_subjects = ManyToManyField(Subject)
+    add_subjects = ManyToManyField(Subject, backref='subject-student')
     headman = BooleanField()
     rating = FloatField()
 
@@ -79,12 +49,20 @@ class Student(Human):
 
 class Group(BaseModel):
 
-    students = ManyToManyField(Student)
-    headman = ForeignKeyField(Student)
+    students = ManyToManyField(Student, backref='student-group')
+    headman_name = ForeignKeyField(Student)
     curator = ForeignKeyField(Teacher)
-    main_subjects = ManyToManyField(Subject)
+    main_subjects = ManyToManyField(Subject, backref='subject-group')
     title = CharField()
     end_date = DateField()
 
     class Meta:
         db_table = 'groups'
+
+
+StudentGroup = Group.students.get_through_model()
+StudentSubject = Student.add_subjects.get_through_model()
+GroupSubjects = Group.main_subjects.get_through_model()
+
+# with db:
+#     db.create_tables([GroupSubjects, StudentGroup, StudentSubject, Group, Subject, Student, Teacher, Human])

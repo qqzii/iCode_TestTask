@@ -1,36 +1,5 @@
 import datetime
-from prettytable import PrettyTable
 from models import *
-
-
-def create_human(full_name, birth_year, birth_month, birth_day):
-    return Human(full_name=full_name, birth_date=datetime.date(birth_year, birth_month, birth_day)).save()
-
-
-def create_subject(title):
-    return Subject(title=title).save()
-
-
-def create_teacher(full_name, birth_year, birth_month, birth_day, subject_id):
-    create_human(full_name, birth_year, birth_month, birth_day)
-    return Teacher(
-        full_name=full_name, birth_date=datetime.date(birth_year, birth_month, birth_day), subject_id=subject_id
-    ).save()
-
-
-def create_student(full_name, birth_year, birth_month, birth_day, add_subjects_id, headman, rating):
-    create_human(full_name, birth_year, birth_month, birth_day)
-    return Student(
-        full_name=full_name, birth_date=datetime.date(birth_year, birth_month, birth_day),
-        add_subjects_id=add_subjects_id, headman=headman, rating=rating
-    ).save()
-
-
-def create_group(
-        students_id, headman_id, curator_id, main_subjects_id, title, end_date_year, end_date_month, end_date_day):
-    end_date = datetime.date(end_date_year, end_date_month, end_date_day)
-    return Group(students_id=students_id, headman_id=headman_id, curator_id=curator_id,
-                 main_subjects_id=main_subjects_id, title=title, end_date=end_date).save()
 
 
 def greetings():
@@ -54,8 +23,8 @@ def action_choice():
     key = True
     answer = ''
     while key:
-        print('Please select the function you want to perform:\n1. View data\n2. Adding data\n'
-              '3. Change data\n4. Delete data')
+        print('Please select the function you want to perform:\n1. View data\n2. Adding data\n3. Change data\n'
+              '4. Delete data')
         answer = input('Your choice: ')
         answer, key = selection_check(answer, key, 4)
     return answer
@@ -65,59 +34,76 @@ def table_choice():
     key = True
     answer = ''
     while key:
-        print('Please select table:\n1. Groups\n2. Students\n'
-              '3. Teachers\n4. Subjects\n5. Pass Cards')
+        print('Please select table:\n1. Groups\n2. Students\n3. Teachers\n4. Subjects\n5. Pass Cards')
         answer = input('Your choice: ')
         answer, key = selection_check(answer, key, 5)
     return answer
 
 
+def draw_table(columns, model):
+    head = ''
+    summa = 0
+
+    for i in columns:
+        head += str(i.ljust(columns[i]))
+        summa += columns[i]
+    print(head)
+    print('-' * (summa-2))
+
+    all_table = model[0].select()
+
+    model = model[1:]
+
+    for rows in all_table:
+        body = ''
+        for cols, width in zip(model, columns):
+            if cols == 'subject':
+                val = getattr(getattr(rows, cols), 'title')
+            elif cols == 'headman':
+                if getattr(rows, cols):
+                    val = 'Headman'
+                else:
+                    val = ' '
+            elif cols == 'headman_name':
+                val = getattr(getattr(rows, cols), 'full_name')
+            elif cols == 'curator':
+                val = getattr(getattr(rows, cols), 'full_name')
+            else:
+                val = getattr(rows, cols)
+            body += str(val).ljust(columns[width])
+        print(body)
+
+
 def view(table):
+    columns = {}
+    model = []
     print('Your table:')
     if table == 1:
-        print('id'.ljust(5), 'Title'.ljust(60), 'Students'.ljust(35), 'Headman'.ljust(35), 'Curator'.ljust(35),
-              'Main Subjects'.ljust(7), 'End Date'.ljust(12))
-        print('-' * 197)
-        all_table = Group.select().where(Group.id > 0)
-        for i in all_table:
-            print(str(i.id).ljust(5), str(i.title).ljust(60), '000'.ljust(35),
-                  str(i.headman.full_name).ljust(35), str(i.curator.full_name).ljust(35), '000'.ljust(7),
-                  str(i.end_date).ljust(12))
+        model = [Group, 'id', 'title', 'headman_name', 'curator', 'end_date']
+        columns = {'ID': 6, 'Title': 60, 'Headman': 40, 'Curator': 40, 'End Date': 16}
+
+        # for i in all_table:
+        #     names = []
+        #     for j in i.students:
+        #         names.append(j.full_name)
 
     if table == 2:
-        print('id'.ljust(5), 'Full Name'.ljust(35), 'Birth Date'.ljust(12), 'Additional Subjects'.ljust(40),
-              'Headman'.ljust(10), 'Average Rating'.ljust(14))
-        print('-' * 121)
-        all_table = Student.select().where(Student.id > 0)
-        for i in all_table:
-            if i.headman:
-                head_group = 'Headman'
-            else:
-                head_group = ' '
-            print(str(i.id).ljust(5), str(i.full_name).ljust(35), str(i.birth_date).ljust(12), str(i).ljust(40),
-                  str(head_group).ljust(10), str(i.rating).ljust(14))
+        model = [Student, 'id', 'full_name', 'birth_date', 'headman', 'rating']
+        columns = {'ID': 6, 'Full Name': 40, 'Birth Date': 16, 'Headman': 11, 'Rating': 8}
 
     if table == 3:
-        print('id'.ljust(5), 'Full Name'.ljust(35), 'Birth Date'.ljust(12), 'Subject Title'.ljust(55))
-        print('-' * 107)
-        all_table = Teacher.select().where(Teacher.id > 0)
-        for i in all_table:
-            print(str(i.id).ljust(5), str(i.full_name).ljust(35), str(i.birth_date).ljust(12),
-                  str(i.subject.title).ljust(55))
+        model = [Teacher, 'id', 'full_name', 'birth_date', 'subject']
+        columns = {'ID': 6, 'Full Name': 40, 'Birth Date': 16, 'Subject Title': 51}
 
     if table == 4:
-        print('id'.ljust(5), 'Title'.ljust(55))
-        print('-' * 60)
-        all_table = Subject.select().where(Subject.id > 0)
-        for i in all_table:
-            print(str(i.id).ljust(5), str(i.title).ljust(55))
+        model = [Subject, 'id', 'title']
+        columns = {'ID': 6, 'Title': 51}
 
     if table == 5:
-        print('id'.ljust(5), 'Full Name'.ljust(35), 'Birth Date'.ljust(12))
-        print('-' * 52)
-        all_table = Human.select().where(Human.id > 0)
-        for i in all_table:
-            print(str(i.id).ljust(5), str(i.full_name).ljust(35), str(i.birth_date).ljust(12))
+        model = [Human, 'id', 'full_name', 'birth_date']
+        columns = {'ID': 6, 'Full Name': 40, 'Birth Date': 16}
+
+    draw_table(columns, model)
 
 
 def add():
@@ -145,10 +131,8 @@ def redirect(table, action):
 
 def main():
 
-    with db:
-        db.create_tables([Human, Subject, Student, Group, StudentSubject, StudentGroup, GroupSubject, Teacher])
-    # greetings()
-    # redirect(table_choice(), action_choice())
+    greetings()
+    redirect(table_choice(), action_choice())
 
 
 main()
