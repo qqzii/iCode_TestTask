@@ -455,6 +455,10 @@ def human_add():
         print('glavv')
 
 
+def teacher_delete():
+    print('Enter the ID of the Teacher you want to remove')
+
+
 def add(table):
     if table == 1:
         group_add()
@@ -480,7 +484,7 @@ def delete(table):
         pass
 
     elif table == 3:
-        pass
+        teacher_delete()
 
     elif table == 4:
         pass
