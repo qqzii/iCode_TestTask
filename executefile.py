@@ -204,19 +204,35 @@ def view(table):
         draw_table(columns, model)
 
 
-def validation(var_mean, count, message):
+def validation(field_type, count, message):
 
-    if var_mean == 'int':
+    if field_type == 'int' or field_type == 'boolean' or field_type == 'float':
         while True:
             inp = input(message)
-            if inp.isdigit() and count >= int(inp) > 0:
-                res = int(inp)
-                break
-            else:
-                print('Error, please enter a number from 1 to ' + str(count))
+            if field_type == 'int':
+                if inp.isdigit() and count >= int(inp) > 0:
+                    res = int(inp)
+                    break
+                else:
+                    print('Error, please enter a number from 1 to ' + str(count))
+            elif field_type == 'boolean':
+                if inp.isdigit() and count >= int(inp) >= 0:
+                    res = int(inp)
+                    break
+                else:
+                    print('Error, please enter 1 or 0')
+            elif field_type == 'float':
+                try:
+                    if count >= float(inp) > 0:
+                        res = round(float(inp), 1)
+                        break
+                    else:
+                        print('Error, please enter a float number from 0 to ' + str(count))
+                except ValueError:
+                    print('Error, please enter a float number from 0 to ' + str(count))
         return res
 
-    elif var_mean == 'name' or var_mean == 'title':
+    elif field_type == 'name' or field_type == 'title' or field_type == 'title_subject':
         while True:
             inp = input(message)
             front = '^'
@@ -227,24 +243,29 @@ def validation(var_mean, count, message):
                 body += '\w+'
                 if i+1 != count:
                     body += '\s'
-            if var_mean == 'name':
+            if field_type == 'name':
                 regular = front + body + back
-            elif var_mean == 'title':
+            elif field_type == 'title':
                 regular = front + 'Departament\s[\w+\s]{,50}' + back
+            elif field_type == 'title_subject':
+                regular = front + '[\w+\s]{,60}' + back
             # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             if re.match(regular, inp):
                 res = inp
                 break
             else:
-                if var_mean == 'name':
+                if field_type == 'name':
                     print('Error, please enter full name in three words (First Name, Father Name, Last Name) separated '
                           'by spaces')
-                elif var_mean == 'title':
-                    print('Error, enter a title of at least two and no more than fifty characters with the first word '
-                          '"Department" separated by a spaces')
+                elif field_type == 'title':
+                    print('Error, enter a title of at least two words and no more than fifty characters with the first '
+                          'word "Department" separated by a spaces')
+                elif field_type == 'title_subject':
+                    print('Error, enter a title with at least one word and no more than sixty characters, with words '
+                          'separated by a space')
         return res
 
-    elif var_mean == 'date':
+    elif field_type == 'date':
         while True:
             inp = input(message)
             try:
@@ -265,6 +286,12 @@ def validation(var_mean, count, message):
                     print('Our university does not employ such young teachers')
                 elif 1915 < year < 1951 and count == 'Teacher':
                     print('You are about to retire or you are already retired, so we cannot recruit you')
+                elif year > 2006 and count == 'Student':
+                    print('We do not accept such young students')
+                elif year < 2000 and count == 'Student':
+                    print('You are too old to study at our university')
+                elif (1951 > year or 2006 < year) and count == 'Human':
+                    print("By age, you don't fall into any category")
                 else:
                     res = (str(year) + '-' + str(month) + '-' + str(day))
                     break
@@ -272,7 +299,7 @@ def validation(var_mean, count, message):
                 print('Invalid date, please try again')
         return res
 
-    elif var_mean == 'list':
+    elif field_type == 'list':
         list_res = []
         while True:
             inp = input(message)
@@ -308,6 +335,7 @@ def teacher_add():
     subject = validation('int', subject_count, message)
 
     Teacher.create(full_name=full_name, birth_date=birth_date, subject=subject).save()
+    Human.create(full_name=full_name, birth_date=birth_date)
 
     print('\nModel object Teacher created successfully\n')
 
@@ -353,28 +381,115 @@ def group_add():
     print('\nModel object Group created successfully\n')
 
 
+def student_add():
+    print('\nATTENTION: model Student has fields: Full Name, Date of Birth, status Headman or not, Rating\n')
+
+    count_words = 3
+    message = 'Enter the full name of the student: '
+    full_name = validation('name', count_words, message)
+
+    who = 'Student'
+    message = 'Enter the student date of birth in the format year/month/day: '
+    birth_date = validation('date', who, message)
+
+    true_false = 1
+    message = 'Enter 1 if the student will be the headman or enter 0 if not: '
+    headman = validation('boolean', true_false, message)
+
+    rating = 10.0
+    message = 'Enter the average student rating: '
+    rating = validation('float', rating, message)
+
+    print('\nYou also need to enter the ID of the subjects that will be additional for this student\n')
+
+    subject_count = Subject.filter(Subject.id > 0).count()
+    message = 'Enter the ID of subjects that will be additional for this student, separated by a space: '
+    subjects_id_list = validation('list', subject_count, message)
+
+    Student.create(full_name=full_name, birth_date=birth_date, headman=headman, rating=rating).save()
+    Human.create(full_name=full_name, birth_date=birth_date)
+
+    count_student = Student.filter(Student.id > 0).count()
+    for i in subjects_id_list:
+        StudentSubject.create(student_id=count_student, subject_id=i).save()
+
+    print('\nModel object Student created successfully\n')
+
+
+def subject_add():
+    print('\nATTENTION: model Subject has fields: Title\n')
+
+    count_words = 0
+    message = 'Enter subject title: '
+    title = validation('title_subject', count_words, message)
+
+    Subject.create(title=title).save()
+
+    print('\nModel object Subject created successfully\n')
+
+
+def human_add():
+    print('\nPlease note that this table contains only information for pass-card. If you want to create a Student or '
+          'Teacher, you can create them by selecting the appropriate option in the previous menu. If you want to create'
+          ' a position for a university employee, then you should continue')
+
+    request = '\nPlease select the function you want to perform:\n1. Create pass-card\n2. To the main menu'
+    answer = choice(request, 2)
+
+    if answer == 1:
+        print('\nATTENTION: model Pass-Card has fields: Full Name, Date of Birth\n')
+
+        count_words = 3
+        message = 'Enter the full name: '
+        full_name = validation('name', count_words, message)
+
+        who = 'Human'
+        message = 'Enter the student date of birth in the format year/month/day: '
+        birth_date = validation('date', who, message)
+
+        Human.create(full_name=full_name, birth_date=birth_date).save()
+
+        print('\nPass-Card created successfully\n')
+
+    else:
+        print('glavv')
+
+
 def add(table):
     if table == 1:
         group_add()
 
-    if table == 2:
-        pass
+    elif table == 2:
+        student_add()
 
-    if table == 3:
+    elif table == 3:
         teacher_add()
 
-    if table == 4:
+    elif table == 4:
+        subject_add()
+
+    elif table == 5:
+        human_add()
+
+
+def delete(table):
+    if table == 1:
         pass
 
-    if table == 5:
+    elif table == 2:
+        pass
+
+    elif table == 3:
+        pass
+
+    elif table == 4:
+        pass
+
+    elif table == 5:
         pass
 
 
 def change(table):
-    pass
-
-
-def delete(table):
     pass
 
 
