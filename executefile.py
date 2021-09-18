@@ -1,4 +1,3 @@
-from datetime import datetime
 import time
 import re
 from models import *
@@ -311,7 +310,7 @@ def validation(field_type, count, message):
                     if count >= i > 0:
                         list_res.append(i)
                     else:
-                        print('Numbers greater than ' + str(count) + ' have been automatically removed')
+                        print('Number greater than ' + str(count) + ' have been automatically removed')
                 break
             else:
                 print('Error, please enter several (no more than 10) or one number from 1 to ' + str(count) +
@@ -451,12 +450,175 @@ def human_add():
 
         print('\nPass-Card created successfully\n')
 
-    else:
+    elif answer == 2:
         print('glavv')
 
 
 def teacher_delete():
-    print('Enter the ID of the Teacher you want to remove')
+
+    view(3)
+
+    teacher_count = Teacher.filter(Teacher.id > 0).count()
+    message = '\nEnter the ID of the Teacher you want to remove: '
+    teacher_id = validation('int', teacher_count, message)
+
+    object_model = Teacher.select().where(Teacher.id == teacher_id)
+
+    teacher_name = ''
+    for i in object_model:
+        teacher_name = i.full_name
+
+    request = '\nConfirm DELETE Teacher with ID - ' + str(teacher_id) + ':\n1. Confirm\n2. Do not delete. To the main' \
+                                                                        ' menu'
+    answer = choice(request, 2)
+
+    if answer == 1:
+        Teacher.get(Teacher.id == teacher_id).delete_instance()
+        Human.get(Human.full_name == teacher_name).delete_instance()
+
+        print('\nModel object Teacher deleted successfully\n')
+
+    elif answer == 2:
+        print('glavv')
+
+
+def group_delete():
+
+    print('\nYour table:')
+    model = [Group, 'id', 'title', 'headman_name', 'curator', 'end_date']
+    columns = {'ID': 6, 'Title': 60, 'Headman': 40, 'Curator': 40, 'End Date': 16}
+    draw_table(columns, model)
+
+    group_count = Teacher.filter(Teacher.id > 0).count()
+    message = '\nEnter the ID of the Group you want to remove: '
+    group_id = validation('int', group_count, message)
+
+    request = '\nConfirm DELETE Group with ID - ' + str(group_id) + ':\n1. Confirm\n2. Do not delete. To the main menu'
+    answer = choice(request, 2)
+
+    if answer == 1:
+        StudentGroup.get(StudentGroup.group == group_id).delete_instance()
+        GroupSubjects.get(GroupSubjects.group == group_id).delete_instance()
+        Group.get(Group.id == group_id).delete_instance()
+
+        print('\nModel object Group deleted successfully\n')
+
+    elif answer == 2:
+        print('glavv')
+
+
+def student_delete():
+
+    print('\nYour table:')
+    model = [Student, 'id', 'full_name', 'birth_date', 'headman', 'rating']
+    columns = {'ID': 6, 'Full Name': 40, 'Birth Date': 16, 'Headman': 11, 'Rating': 8}
+    draw_table(columns, model)
+
+    student_count = Student.filter(Student.id > 0).count()
+    message = '\nEnter the ID of the Student you want to remove: '
+    student_id = validation('int', student_count, message)
+
+    object_model = Student.select().where(Student.id == student_id)
+
+    student_name = ''
+    for i in object_model:
+        student_name = i.full_name
+
+    request = '\nConfirm DELETE Student with ID - ' + str(student_id) + ':\n1. Confirm\n2. Do not delete. To the ' \
+                                                                        'main menu'
+    answer = choice(request, 2)
+
+    if answer == 1:
+        # for i in StudentGroup.select().where(StudentGroup.student == student_id):
+        #     i.delete_instance()
+        for i in StudentSubject.select().where(StudentSubject.student == student_id):
+            i.delete_instance()
+        Student.get(Student.id == student_id).delete_instance()
+        Human.get(Human.full_name == student_name).delete_instance()
+
+        print('\nModel object Student deleted successfully\n')
+
+    elif answer == 2:
+        print('glavv')
+
+
+def subject_delete():
+
+    view(4)
+
+    subject_count = Subject.filter(Subject.id > 0).count()
+    message = '\nEnter the ID of the Subject you want to remove: '
+    subject_id = validation('int', subject_count, message)
+
+    request = '\nConfirm DELETE Subject with ID - ' + str(subject_id) + ':\n1. Confirm\n2. Do not delete. To the main' \
+                                                                        ' menu'
+    answer = choice(request, 2)
+
+    if answer == 1:
+        GroupSubjects.get(GroupSubjects.subject == subject_id).delete_instance()
+        StudentSubject.get(StudentSubject.subject == subject_id).delete_instance()
+        Subject.get(Subject.id == subject_id).delete_instance()
+        print('\nModel object Subject deleted successfully\n')
+
+    elif answer == 2:
+        print('glavv')
+
+
+def human_definition(model_name, name):
+    response = False
+    id_found = 0
+    for i in model_name.select():
+        if i.full_name == name:
+            id_found = i.id
+            response = True
+    return response, id_found
+
+
+def human_delete():
+    print('\nPlease note if you delete a Student or Teacher, they will be deleted from all tables')
+
+    request = '\nPlease select the function you want to perform:\n1. Continue\n2. To the main menu'
+    answer = choice(request, 2)
+
+    if answer == 1:
+        view(5)
+
+        human_count = Human.filter(Human.id > 0).count()
+        message = '\nEnter the ID of the Pass-Card you want to remove: '
+        human_id = validation('int', human_count, message)
+
+        object_model = Human.select().where(Human.id == human_id)
+
+        human_name = ''
+        for i in object_model:
+            human_name = i.full_name
+
+        request = '\nConfirm DELETE Pass-Card with ID - ' + str(human_id) + ':\n1. Confirm\n2. Do not delete. To the' \
+                                                                            ' main menu'
+        answer = choice(request, 2)
+
+        if answer == 1:
+            is_student, student_id = human_definition(Student, human_name)
+            is_teacher, teacher_id = human_definition(Teacher, human_name)
+            if is_student:
+                # for i in StudentGroup.select().where(StudentGroup.student == student_id):
+                #     i.delete_instance()
+                for i in StudentSubject.select().where(StudentSubject.student == student_id):
+                    i.delete_instance()
+                Student.get(Student.id == student_id).delete_instance()
+
+            elif is_teacher:
+                Teacher.get(Teacher.id == teacher_id).delete_instance()
+
+            Human.get(Human.id == human_id).delete_instance()
+
+            print('\nPass-Card and Model deleted successfully\n')
+
+        elif answer == 2:
+            print('glavv')
+
+    elif answer == 2:
+        print('glavv')
 
 
 def add(table):
@@ -478,23 +640,36 @@ def add(table):
 
 def delete(table):
     if table == 1:
+        group_delete()
+
+    elif table == 2:
+        student_delete()
+
+    elif table == 3:
+        teacher_delete()
+
+    elif table == 4:
+        subject_delete()
+
+    elif table == 5:
+        human_delete()
+
+
+def change(table):
+    if table == 1:
         pass
 
     elif table == 2:
         pass
 
     elif table == 3:
-        teacher_delete()
+        pass
 
     elif table == 4:
         pass
 
     elif table == 5:
         pass
-
-
-def change(table):
-    pass
 
 
 def redirect(action, table):
