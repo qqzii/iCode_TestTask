@@ -33,13 +33,14 @@ def choice(request, qty):
 
 
 def action_choice():
-    request = '\nPlease select the function you want to perform:\n1. View data\n2. Adding data\n3. Change data\n' \
-              '4. Delete data'
+    request = '\nPlease select the function you want to perform:\n1. View data\n2. Adding data\n3. Delete data' \
+              '\n4. To the main menu'
     return choice(request, 4)
 
 
 def table_choice():
-    request = '\nPlease select table:\n1. Groups\n2. Students\n3. Teachers\n4. Subjects\n5. Pass Cards'
+    request = '\nPlease select table:\n1. Groups\n2. Students\n3. Teachers\n4. Subjects\n5. Pass Cards' \
+              '\n6. To the main menu'
     return choice(request, 5)
 
 
@@ -175,8 +176,8 @@ def view(table, key_for_view=True):
 
         if key_for_view:
 
-            request = '\nWould you like to see additional data?\n1. View a list of additional subjects for each student\n' \
-                      '2. I don’t want to watch additional data'
+            request = '\nWould you like to see additional data?\n1. View a list of additional subjects for each ' \
+                      'student\n2. I don’t want to watch additional data'
             answer = choice(request, 2)
 
             if answer == 1:
@@ -252,7 +253,6 @@ def validation(field_type, count, message):
                 regular = front + 'Departament\s[\w+\s]{,50}' + back
             elif field_type == 'title_subject':
                 regular = front + '[\w+\s]{,60}' + back
-            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             if re.match(regular, inp):
                 res = inp
                 break
@@ -346,15 +346,15 @@ def removal(model, model_name, table, key_for_view=True):
     view(table, key_for_view)
 
     data = prepare_fields({
-        '\nEnter the ID of the ' + model_name + ' you want to remove: ': ['int', model.filter(model.id > 0).count()]
+        '\nEnter the ID of the ' + model_name + ' you want to remove: ':
+            ['int', model.filter(model.id > 0).count()]
     })
 
-    request = '\nConfirm DELETE ' + model_name + ' with ID - ' + str(data[0]) + ':\n1. Confirm\n2. Do not delete. To' \
-                                                                                ' the main menu'
+    request = '\nConfirm DELETE ' + model_name + ' with ID - ' + str(data[0]) + ':\n1. Confirm\n2. Do not ' \
+                                                                                'delete. To the main menu'
     answer = choice(request, 2)
 
     if answer == 1:
-
         if model == Teacher or model == Student or model == Human:
 
             object_model = model.select().where(model.id == data[0])
@@ -408,175 +408,150 @@ def removal(model, model_name, table, key_for_view=True):
         print('glavv')
 
 
-def add(table):
-    if table == 1:
-        print('\nATTENTION: model Group has fields: Title, ID of Curator, ID of Headman, End Date\n')
-
-        data = prepare_fields({'Enter group title: ': ['title', 0],
-                               'Enter the ID of group curator: ': ['int', Teacher.filter(Teacher.id > 0).count()],
-                               'Enter the ID of group headman: ': ['int', Student.filter(Student.id > 0).count()],
-                               'Enter year of end education in the format year/month/day: ': ['date', 'Group']
-                               })
-
-        print('\nYou also need to enter the ID of the Students who will study in this group and ID of main subjects of '
-              'this group\n')
-
-        data_support = prepare_fields({
-            'Enter the ID of subjects that will be the main for this group, separated by a space: ':
-                ['list', Subject.filter(Subject.id > 0).count()],
-            'Enter the ID of the students who will study in this group, separated by a space: ':
-                ['list', Student.filter(Student.id > 0).count()]
-        })
-
-        Group.create(title=data[0], curator_id=data[1], headman_name_id=data[2], end_date=data[3]).save()
-
-        count_group = Group.filter(Group.id > 0).count()
-        for i in data_support[0]:
-            GroupSubjects.create(group_id=count_group, subject_id=i).save()
-        for i in data_support[1]:
-            StudentGroup.create(group_id=count_group, student_id=i).save()
-
-        print('\nModel object Group created successfully\n')
-
-    elif table == 2:
-        print(
-            '\nATTENTION: model Student has fields: Full Name, Date of Birth, Group ID, status Headman or not, '
-            'Rating\n')
-
-        data = prepare_fields({
-            'Enter the full name of the student: ': ['name', 3],
-            'Enter the student date of birth in the format year/month/day: ': ['date', 'Student'],
-            'Enter the ID of the group, where will the student study: ': ['int', Group.filter(Group.id > 0).count()],
-            'Enter 1 if the student is applying for the role of headman and 0 if not: ': ['boolean', 1],
-            'Enter the average student rating: ': ['float', 10.0]
-        })
-
-        print('\nYou also need to enter the ID of the subjects that will be additional for this student\n')
-
-        data_support = prepare_fields({
-            'Enter the ID of subjects that will be additional for this student, separated by a space: ':
-                ['list', Subject.filter(Subject.id > 0).count()]
-        })
-
-        Student.create(full_name=data[0], birth_date=data[1], headman=data[3], rating=data[4]).save()
-        StudentGroup.create(group_id=data[2], student_id=Student.filter(Student.id > 0).count()).save()
-        Human.create(full_name=data[0], birth_date=data[1])
-
-        count_student = Student.filter(Student.id > 0).count()
-        for i in data_support[0]:
-            StudentSubject.create(student_id=count_student, subject_id=i).save()
-
-        print('\nModel object Student created successfully\n')
-
-    elif table == 3:
-        print('\nATTENTION: model Teacher has fields: Full Name, Date of Birth, ID of the taught Subject\n')
-
-        data = prepare_fields({
-            'Enter the full name of the teacher: ': ['name', 3],
-            'Enter the teacher date of birth in the format year/month/day: ': ['date', 'Teacher'],
-            'Enter the ID of the taught subject: ': ['int', Subject.filter(Subject.id > 0).count()]
-        })
-
-        Teacher.create(full_name=data[0], birth_date=data[1], subject=data[2]).save()
-        Human.create(full_name=data[0], birth_date=data[1])
-
-        print('\nModel object Teacher created successfully\n')
-
-    elif table == 4:
-        print('\nATTENTION: model Subject has fields: Title\n')
-
-        data = prepare_fields({
-            'Enter subject title: ': ['title_subject', 0]
-        })
-
-        Subject.create(title=data[0]).save()
-
-        print('\nModel object Subject created successfully\n')
-
-    elif table == 5:
-        print('\nPlease note that this table contains only information for pass-card. If you want to create a Student'
-              ' or Teacher, you can create them by selecting the appropriate option in the previous menu. If you want'
-              ' to create a position for a university employee, then you should continue')
-
-        request = '\nPlease select the function you want to perform:\n1. Create pass-card\n2. To the main menu'
-        answer = choice(request, 2)
-
-        if answer == 1:
-            print('\nATTENTION: model Pass-Card has fields: Full Name, Date of Birth\n')
-
-            data = prepare_fields({
-                'Enter the full name: ': ['name', 3],
-                'Enter the student date of birth in the format year/month/day: ': ['date', 'Human']
-            })
-
-            Human.create(full_name=data[0], birth_date=data[1]).save()
-
-            print('\nPass-Card created successfully\n')
-
-        elif answer == 2:
-            print('glavv')
-
-
-def delete(table):
-    if table == 1:
-        removal(Group, 'Group', table, False)
-
-    elif table == 2:
-        removal(Student, 'Student', table, False)
-
-    elif table == 3:
-        removal(Teacher, 'Teacher', table)
-    elif table == 4:
-        removal(Subject, 'Subject', table)
-
-    elif table == 5:
-        print('\nPlease note if you delete a Student or Teacher, they will be deleted from all tables')
-
-        request = '\nPlease select the function you want to perform:\n1. Continue\n2. To the main menu'
-        answer = choice(request, 2)
-
-        if answer == 1:
-            removal(Human, 'Pass-Card', table)
-
-        elif answer == 2:
-            print('glavv')
-
-
-def change(table):
-    if table == 1:
-        pass
-
-    elif table == 2:
-        pass
-
-    elif table == 3:
-        pass
-
-    elif table == 4:
-        pass
-
-    elif table == 5:
-        pass
-
-
 def redirect(action, table):
     if action == 1:
         view(table)
 
     elif action == 2:
-        add(table)
+        if table == 1:
+            print('\nATTENTION: model Group has fields: Title, ID of Curator, ID of Headman, End Date\n')
+
+            data = prepare_fields({'Enter group title: ': ['title', 0],
+                                   'Enter the ID of group curator: ': ['int', Teacher.filter(Teacher.id > 0).count()],
+                                   'Enter the ID of group headman: ': ['int', Student.filter(Student.id > 0).count()],
+                                   'Enter year of end education in the format year/month/day: ': ['date', 'Group']
+                                   })
+
+            print(
+                '\nYou also need to enter the ID of the Students who will study in this group and ID of main subjects'
+                ' of this group\n')
+
+            data_support = prepare_fields({
+                'Enter the ID of subjects that will be the main for this group, separated by a space: ':
+                    ['list', Subject.filter(Subject.id > 0).count()],
+                'Enter the ID of the students who will study in this group, separated by a space: ':
+                    ['list', Student.filter(Student.id > 0).count()]
+            })
+
+            Group.create(title=data[0], curator_id=data[1], headman_name_id=data[2], end_date=data[3]).save()
+
+            count_group = Group.filter(Group.id > 0).count()
+            for i in data_support[0]:
+                GroupSubjects.create(group_id=count_group, subject_id=i).save()
+            for i in data_support[1]:
+                StudentGroup.create(group_id=count_group, student_id=i).save()
+
+            print('\nModel object Group created successfully\n')
+
+        elif table == 2:
+            print(
+                '\nATTENTION: model Student has fields: Full Name, Date of Birth, Group ID, status Headman or not, '
+                'Rating\n')
+
+            data = prepare_fields({
+                'Enter the full name of the student: ': ['name', 3],
+                'Enter the student date of birth in the format year/month/day: ': ['date', 'Student'],
+                'Enter the ID of the group, where will the student study: ': ['int',
+                                                                              Group.filter(Group.id > 0).count()],
+                'Enter 1 if the student is applying for the role of headman and 0 if not: ': ['boolean', 1],
+                'Enter the average student rating: ': ['float', 10.0]
+            })
+
+            print('\nYou also need to enter the ID of the subjects that will be additional for this student\n')
+
+            data_support = prepare_fields({
+                'Enter the ID of subjects that will be additional for this student, separated by a space: ':
+                    ['list', Subject.filter(Subject.id > 0).count()]
+            })
+
+            Student.create(full_name=data[0], birth_date=data[1], headman=data[3], rating=data[4]).save()
+            StudentGroup.create(group_id=data[2], student_id=Student.filter(Student.id > 0).count()).save()
+            Human.create(full_name=data[0], birth_date=data[1])
+
+            count_student = Student.filter(Student.id > 0).count()
+            for i in data_support[0]:
+                StudentSubject.create(student_id=count_student, subject_id=i).save()
+
+            print('\nModel object Student created successfully\n')
+
+        elif table == 3:
+            print('\nATTENTION: model Teacher has fields: Full Name, Date of Birth, ID of the taught Subject\n')
+
+            data = prepare_fields({
+                'Enter the full name of the teacher: ': ['name', 3],
+                'Enter the teacher date of birth in the format year/month/day: ': ['date', 'Teacher'],
+                'Enter the ID of the taught subject: ': ['int', Subject.filter(Subject.id > 0).count()]
+            })
+
+            Teacher.create(full_name=data[0], birth_date=data[1], subject=data[2]).save()
+            Human.create(full_name=data[0], birth_date=data[1])
+
+            print('\nModel object Teacher created successfully\n')
+
+        elif table == 4:
+            print('\nATTENTION: model Subject has fields: Title\n')
+
+            data = prepare_fields({
+                'Enter subject title: ': ['title_subject', 0]
+            })
+
+            Subject.create(title=data[0]).save()
+
+            print('\nModel object Subject created successfully\n')
+
+        elif table == 5:
+            print(
+                '\nPlease note that this table contains only information for pass-card. If you want to create a Student'
+                ' or Teacher, you can create them by selecting the appropriate option in the previous menu. If you want'
+                ' to create a position for a university employee, then you should continue')
+
+            request = '\nPlease select the function you want to perform:\n1. Create pass-card\n2. To the main menu'
+            answer = choice(request, 2)
+
+            if answer == 1:
+                print('\nATTENTION: model Pass-Card has fields: Full Name, Date of Birth\n')
+
+                data = prepare_fields({
+                    'Enter the full name: ': ['name', 3],
+                    'Enter the student date of birth in the format year/month/day: ': ['date', 'Human']
+                })
+
+                Human.create(full_name=data[0], birth_date=data[1]).save()
+
+                print('\nPass-Card created successfully\n')
+
+            elif answer == 2:
+                print('glavv')
 
     elif action == 3:
-        change(table)
+        if table == 1:
+            removal(Group, 'Group', table, False)
 
-    elif action == 4:
-        delete(table)
+        elif table == 2:
+            removal(Student, 'Student', table, False)
+
+        elif table == 3:
+            removal(Teacher, 'Teacher', table)
+        elif table == 4:
+            removal(Subject, 'Subject', table)
+
+        elif table == 5:
+            print('\nPlease note if you delete a Student or Teacher, they will be deleted from all tables')
+
+            request = '\nPlease select the function you want to perform:\n1. Continue\n2. To the main menu'
+            answer = choice(request, 2)
+
+            if answer == 1:
+                removal(Human, 'Pass-Card', table)
+
+            elif answer == 2:
+                print('glavv')
 
 
 def main():
-
     greetings()
-    redirect(action_choice(), table_choice())
+    while True:
+        redirect(action_choice(), table_choice())
 
 
 main()
