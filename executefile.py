@@ -1,47 +1,58 @@
 import time
 import re
+from text_base import text_base
 from models import *
 
 
-def greetings():
-
-    print('Welcome to our database!')
-
-
 def selection_check(answer, key, qty):
-
     try:
         if (int(answer) > 0) and (int(answer) < qty + 1):
             answer = int(answer)
             key = False
         else:
-            print('Incorrect input, try again')
+            print(text_base('errors', 0))
     except ValueError:
-        print('Incorrect input, try again')
+        print(text_base('errors', 0))
     return answer, key
 
 
 def choice(request, qty):
     key = True
     answer = ''
-
     while key:
         print(request)
-        answer = input('Your choice: ')
+        answer = input(text_base('choices', 0))
         answer, key = selection_check(answer, key, qty)
     return answer
 
 
+def main_menu():
+    out = False
+    table = 0
+    action = 0
+    request = text_base('choices', 1)
+    passage = choice(request, 3)
+    if passage == 1:
+        action = action_choice()
+        if action != 4:
+            table = table_choice()
+    elif passage == 2:
+        table = table_choice()
+        if table != 6:
+            action = action_choice()
+    elif passage == 3:
+        out = True
+    return action, table, out
+
+
 def action_choice():
-    request = '\nPlease select the function you want to perform:\n1. View data\n2. Adding data\n3. Delete data' \
-              '\n4. To the main menu'
+    request = text_base('choices', 2)
     return choice(request, 4)
 
 
 def table_choice():
-    request = '\nPlease select table:\n1. Groups\n2. Students\n3. Teachers\n4. Subjects\n5. Pass Cards' \
-              '\n6. To the main menu'
-    return choice(request, 5)
+    request = text_base('choices', 3)
+    return choice(request, 6)
 
 
 def draw_table(columns, model):
@@ -90,7 +101,7 @@ def draw_table(columns, model):
 
 
 def subject_group():
-    print('\nList of subjects by group')
+    print(text_base('views', 0))
 
     model = [GroupSubjects, 'group', 'subject']
     columns = {'Group': 60, 'Subject': 52}
@@ -98,7 +109,7 @@ def subject_group():
 
 
 def student_group():
-    print('\nList of students by group')
+    print(text_base('views', 1))
 
     model = [StudentGroup, 'group', 'student']
     columns = {'Group': 60, 'Student': 40}
@@ -106,7 +117,7 @@ def student_group():
 
 
 def student_subject():
-    print('\nList of additional subjects for each student')
+    print(text_base('views', 2))
 
     model = [StudentSubject, 'student', 'subject']
     columns = {'Student': 40, 'Subject': 52}
@@ -115,7 +126,7 @@ def student_subject():
 
 def view(table, key_for_view=True):
 
-    print('\nYour table:')
+    print(text_base('views', 3))
 
     if table == 1:
         model = [Group, 'id', 'title', 'headman_name', 'curator', 'end_date']
@@ -124,50 +135,32 @@ def view(table, key_for_view=True):
 
         if key_for_view:
 
-            request = '\nWould you like to see additional data?\n1. View a list of students in groups\n' \
-                      '2. View the main subjects of groups\n3. I don’t want to watch additional data'
+            request = text_base('choices', 4)
             answer = choice(request, 3)
 
             if answer == 1:
                 student_group()
 
-                request = '\nWould you like to see additional data?\n1. View the main subjects of this group\n' \
-                          '2. I don’t want to watch additional data'
+                request = text_base('choices', 5)
                 answer = choice(request, 2)
 
                 if answer == 1:
                     subject_group()
 
-                    request = '\n1. To the main menu'
-                    answer = choice(request, 1)
-
-                    if answer == 1:
-                        print('glavv')
-
-                elif answer == 2:
-                    print('glavv')
+                    request = text_base('choices', 6)
+                    choice(request, 1)
 
             elif answer == 2:
                 subject_group()
 
-                request = '\nWould you like to see additional data?\n1. View a list of students in groups\n' \
-                          '2. I don’t want to watch additional data'
+                request = text_base('choices', 7)
                 answer = choice(request, 2)
 
                 if answer == 1:
                     student_group()
 
-                    request = '\n1. To the main menu'
-                    answer = choice(request, 1)
-
-                    if answer == 1:
-                        print('glavv')
-
-                elif answer == 2:
-                    print('glavv')
-
-            elif answer == 3:
-                print('glavv')
+                    request = text_base('choices', 6)
+                    choice(request, 1)
 
     if table == 2:
         model = [Student, 'id', 'full_name', 'birth_date', 'headman', 'rating']
@@ -176,36 +169,41 @@ def view(table, key_for_view=True):
 
         if key_for_view:
 
-            request = '\nWould you like to see additional data?\n1. View a list of additional subjects for each ' \
-                      'student\n2. I don’t want to watch additional data'
+            request = text_base('choices', 8)
             answer = choice(request, 2)
 
             if answer == 1:
                 student_subject()
 
-                request = '\n1. To the main menu'
-                answer = choice(request, 1)
-
-                if answer == 1:
-                    print('glavv')
-
-            elif answer == 2:
-                print('glavv')
+                request = text_base('choices', 6)
+                choice(request, 1)
 
     if table == 3:
         model = [Teacher, 'id', 'full_name', 'birth_date', 'subject']
         columns = {'ID': 6, 'Full Name': 40, 'Birth Date': 16, 'Subject Title': 52}
         draw_table(columns, model)
 
+        if key_for_view:
+            request = text_base('choices', 6)
+            choice(request, 1)
+
     if table == 4:
         model = [Subject, 'id', 'title']
         columns = {'ID': 6, 'Title': 52}
         draw_table(columns, model)
 
+        if key_for_view:
+            request = text_base('choices', 6)
+            choice(request, 1)
+
     if table == 5:
         model = [Human, 'id', 'full_name', 'birth_date']
         columns = {'ID': 6, 'Full Name': 40, 'Birth Date': 16}
         draw_table(columns, model)
+
+        if key_for_view:
+            request = text_base('choices', 6)
+            choice(request, 1)
 
 
 def validation(field_type, count, message):
@@ -218,22 +216,22 @@ def validation(field_type, count, message):
                     res = int(inp)
                     break
                 else:
-                    print('Error, please enter a number from 1 to ' + str(count))
+                    print(text_base('errors', 1) + str(count))
             elif field_type == 'boolean':
                 if inp.isdigit() and count >= int(inp) >= 0:
                     res = int(inp)
                     break
                 else:
-                    print('Error, please enter 1 or 0')
+                    print(text_base('errors', 2))
             elif field_type == 'float':
                 try:
                     if count >= float(inp) > 0:
                         res = round(float(inp), 1)
                         break
                     else:
-                        print('Error, please enter a float number from 0 to ' + str(count))
+                        print(text_base('errors', 3) + str(count))
                 except ValueError:
-                    print('Error, please enter a float number from 0 to ' + str(count))
+                    print(text_base('errors', 3) + str(count))
         return res
 
     elif field_type == 'name' or field_type == 'title' or field_type == 'title_subject':
@@ -244,28 +242,25 @@ def validation(field_type, count, message):
             body = ''
             regular = ''
             for i in range(count):
-                body += '\w+'
+                body += text_base('re', 0)
                 if i+1 != count:
-                    body += '\s'
+                    body += text_base('re', 1)
             if field_type == 'name':
                 regular = front + body + back
             elif field_type == 'title':
-                regular = front + 'Departament\s[\w+\s]{,50}' + back
+                regular = front + text_base('re', 2) + back
             elif field_type == 'title_subject':
-                regular = front + '[\w+\s]{,60}' + back
+                regular = front + text_base('re', 3) + back
             if re.match(regular, inp):
                 res = inp
                 break
             else:
                 if field_type == 'name':
-                    print('Error, please enter full name in three words (First Name, Father Name, Last Name) separated '
-                          'by spaces')
+                    print(text_base('errors', 4))
                 elif field_type == 'title':
-                    print('Error, enter a title of at least two words and no more than fifty characters with the first '
-                          'word "Department" separated by a spaces')
+                    print(text_base('errors', 5))
                 elif field_type == 'title_subject':
-                    print('Error, enter a title with at least one word and no more than sixty characters, with words '
-                          'separated by a space')
+                    print(text_base('errors', 6))
         return res
 
     elif field_type == 'date':
@@ -276,30 +271,28 @@ def validation(field_type, count, message):
                 year, month, day = inp.split('/')
                 year, month, day = int(year), int(month), int(day)
                 if year > 2021 and count != 'Group':
-                    print('Our university does not recruit people from the future, please call the NSA they will be '
-                          'more interested')
+                    print(text_base('errors', 7))
                 elif year < 2020 and count == 'Group':
-                    print('This database can only contain groups that have not completed education')
+                    print(text_base('errors', 8))
                 elif year > 2031 and count == 'Group':
-                    print('Students study at our university only for 5 years, and we admit groups only for 3 years in '
-                          'advance')
+                    print(text_base('errors', 9))
                 elif year < 1915:
-                    print('There are no dead souls in our university')
+                    print(text_base('errors', 10))
                 elif 2021 > year > 1997 and count == 'Teacher':
-                    print('Our university does not employ such young teachers')
+                    print(text_base('errors', 11))
                 elif 1915 < year < 1951 and count == 'Teacher':
-                    print('You are about to retire or you are already retired, so we cannot recruit you')
+                    print(text_base('errors', 12))
                 elif year > 2006 and count == 'Student':
-                    print('We do not accept such young students')
+                    print(text_base('errors', 13))
                 elif year < 2000 and count == 'Student':
-                    print('You are too old to study at our university')
+                    print(text_base('errors', 14))
                 elif (1951 > year or 2006 < year) and count == 'Human':
-                    print("By age, you don't fall into any category")
+                    print(text_base('errors', 15))
                 else:
                     res = (str(year) + '-' + str(month) + '-' + str(day))
                     break
             except ValueError:
-                print('Invalid date, please try again')
+                print(text_base('errors', 16))
         return res
 
     elif field_type == 'list':
@@ -307,7 +300,7 @@ def validation(field_type, count, message):
         while True:
             try:
                 inp = input(message)
-                regular = '[\d+\s]{,30}'
+                regular = text_base('re', 4)
                 if re.match(regular, inp):
                     list_id = inp.split(' ')
                     list_id = list(map(int, list_id))
@@ -315,13 +308,11 @@ def validation(field_type, count, message):
                         if count >= i > 0:
                             list_res.append(i)
                         else:
-                            print('Number greater than ' + str(count) + ' and repetitive have been automatically '
-                                                                        'removed')
+                            print(text_base('views', 4) + str(count) + text_base('views', 5))
                     list_res = list(set(list_res))
                     break
             except ValueError:
-                print('Error, please enter several (no more than 10) or one number from 1 to ' + str(count) +
-                      ' separated by a spaces')
+                print(text_base('errors', 17) + str(count) + text_base('errors', 18))
         return list_res
 
 
@@ -342,16 +333,16 @@ def human_definition(model_name, name):
     return response, id_found
 
 
-def removal(model, model_name, table, key_for_view=True):
+def removal(model, model_name, table):
+    key_for_view = False
     view(table, key_for_view)
 
     data = prepare_fields({
-        '\nEnter the ID of the ' + model_name + ' you want to remove: ':
-            ['int', model.filter(model.id > 0).count()]
-    })
+        text_base('choices', 9) + model_name + text_base('choices', 10):
+        ['int', model.filter(model.id > 0).count()]
+                           })
 
-    request = '\nConfirm DELETE ' + model_name + ' with ID - ' + str(data[0]) + ':\n1. Confirm\n2. Do not ' \
-                                                                                'delete. To the main menu'
+    request = text_base('choices', 11) + model_name + text_base('choices', 12) + str(data[0]) + text_base('choices', 13)
     answer = choice(request, 2)
 
     if answer == 1:
@@ -400,12 +391,9 @@ def removal(model, model_name, table, key_for_view=True):
             model.get(model.id == data[0]).delete_instance()
 
         if model == Human:
-            print('\nPass-Card and Model deleted successfully\n')
+            print(text_base('views', 6))
         else:
-            print('\nModel object ' + model_name + ' deleted successfully\n')
-
-    elif answer == 2:
-        print('glavv')
+            print(text_base('views', 7) + model_name + text_base('views', 8))
 
 
 def redirect(action, table):
@@ -414,23 +402,19 @@ def redirect(action, table):
 
     elif action == 2:
         if table == 1:
-            print('\nATTENTION: model Group has fields: Title, ID of Curator, ID of Headman, End Date\n')
+            print(text_base('attentions', 0))
 
-            data = prepare_fields({'Enter group title: ': ['title', 0],
-                                   'Enter the ID of group curator: ': ['int', Teacher.filter(Teacher.id > 0).count()],
-                                   'Enter the ID of group headman: ': ['int', Student.filter(Student.id > 0).count()],
-                                   'Enter year of end education in the format year/month/day: ': ['date', 'Group']
+            data = prepare_fields({text_base('fields', 0): ['title', 0],
+                                   text_base('fields', 1): ['int', Teacher.filter(Teacher.id > 0).count()],
+                                   text_base('fields', 2): ['int', Student.filter(Student.id > 0).count()],
+                                   text_base('fields', 3): ['date', 'Group']
                                    })
 
-            print(
-                '\nYou also need to enter the ID of the Students who will study in this group and ID of main subjects'
-                ' of this group\n')
+            print(text_base('views', 9))
 
             data_support = prepare_fields({
-                'Enter the ID of subjects that will be the main for this group, separated by a space: ':
-                    ['list', Subject.filter(Subject.id > 0).count()],
-                'Enter the ID of the students who will study in this group, separated by a space: ':
-                    ['list', Student.filter(Student.id > 0).count()]
+                text_base('fields', 4): ['list', Subject.filter(Subject.id > 0).count()],
+                text_base('fields', 5): ['list', Student.filter(Student.id > 0).count()]
             })
 
             Group.create(title=data[0], curator_id=data[1], headman_name_id=data[2], end_date=data[3]).save()
@@ -441,27 +425,23 @@ def redirect(action, table):
             for i in data_support[1]:
                 StudentGroup.create(group_id=count_group, student_id=i).save()
 
-            print('\nModel object Group created successfully\n')
+            print(text_base('views', 10))
 
         elif table == 2:
-            print(
-                '\nATTENTION: model Student has fields: Full Name, Date of Birth, Group ID, status Headman or not, '
-                'Rating\n')
+            print(text_base('attentions', 1))
 
             data = prepare_fields({
-                'Enter the full name of the student: ': ['name', 3],
-                'Enter the student date of birth in the format year/month/day: ': ['date', 'Student'],
-                'Enter the ID of the group, where will the student study: ': ['int',
-                                                                              Group.filter(Group.id > 0).count()],
-                'Enter 1 if the student is applying for the role of headman and 0 if not: ': ['boolean', 1],
-                'Enter the average student rating: ': ['float', 10.0]
+                text_base('fields', 6): ['name', 3],
+                text_base('fields', 7): ['date', 'Student'],
+                text_base('fields', 8): ['int', Group.filter(Group.id > 0).count()],
+                text_base('fields', 9): ['boolean', 1],
+                text_base('fields', 10): ['float', 10.0]
             })
 
-            print('\nYou also need to enter the ID of the subjects that will be additional for this student\n')
+            print(text_base('views', 11))
 
             data_support = prepare_fields({
-                'Enter the ID of subjects that will be additional for this student, separated by a space: ':
-                    ['list', Subject.filter(Subject.id > 0).count()]
+                text_base('fields', 11): ['list', Subject.filter(Subject.id > 0).count()]
             })
 
             Student.create(full_name=data[0], birth_date=data[1], headman=data[3], rating=data[4]).save()
@@ -472,86 +452,83 @@ def redirect(action, table):
             for i in data_support[0]:
                 StudentSubject.create(student_id=count_student, subject_id=i).save()
 
-            print('\nModel object Student created successfully\n')
+            print(text_base('views', 12))
 
         elif table == 3:
-            print('\nATTENTION: model Teacher has fields: Full Name, Date of Birth, ID of the taught Subject\n')
+            print(text_base('attentions', 2))
 
             data = prepare_fields({
-                'Enter the full name of the teacher: ': ['name', 3],
-                'Enter the teacher date of birth in the format year/month/day: ': ['date', 'Teacher'],
-                'Enter the ID of the taught subject: ': ['int', Subject.filter(Subject.id > 0).count()]
+                text_base('fields', 12): ['name', 3],
+                text_base('fields', 13): ['date', 'Teacher'],
+                text_base('fields', 14): ['int', Subject.filter(Subject.id > 0).count()]
             })
 
             Teacher.create(full_name=data[0], birth_date=data[1], subject=data[2]).save()
             Human.create(full_name=data[0], birth_date=data[1])
 
-            print('\nModel object Teacher created successfully\n')
+            print(text_base('views', 13))
 
         elif table == 4:
-            print('\nATTENTION: model Subject has fields: Title\n')
+            print(text_base('attentions', 3))
 
             data = prepare_fields({
-                'Enter subject title: ': ['title_subject', 0]
+                text_base('fields', 15): ['title_subject', 0]
             })
 
             Subject.create(title=data[0]).save()
 
-            print('\nModel object Subject created successfully\n')
+            print(text_base('views', 14))
 
         elif table == 5:
-            print(
-                '\nPlease note that this table contains only information for pass-card. If you want to create a Student'
-                ' or Teacher, you can create them by selecting the appropriate option in the previous menu. If you want'
-                ' to create a position for a university employee, then you should continue')
+            print(text_base('views', 15))
 
-            request = '\nPlease select the function you want to perform:\n1. Create pass-card\n2. To the main menu'
+            request = text_base('choices', 14)
             answer = choice(request, 2)
 
             if answer == 1:
-                print('\nATTENTION: model Pass-Card has fields: Full Name, Date of Birth\n')
+                print(text_base('attentions', 4))
 
                 data = prepare_fields({
-                    'Enter the full name: ': ['name', 3],
-                    'Enter the student date of birth in the format year/month/day: ': ['date', 'Human']
+                    text_base('fields', 16): ['name', 3],
+                    text_base('fields', 17): ['date', 'Human']
                 })
 
                 Human.create(full_name=data[0], birth_date=data[1]).save()
 
-                print('\nPass-Card created successfully\n')
-
-            elif answer == 2:
-                print('glavv')
+                print(text_base('views', 16))
 
     elif action == 3:
         if table == 1:
-            removal(Group, 'Group', table, False)
+            removal(Group, 'Group', table)
 
         elif table == 2:
-            removal(Student, 'Student', table, False)
+            removal(Student, 'Student', table)
 
         elif table == 3:
             removal(Teacher, 'Teacher', table)
+
         elif table == 4:
             removal(Subject, 'Subject', table)
 
         elif table == 5:
-            print('\nPlease note if you delete a Student or Teacher, they will be deleted from all tables')
+            print(text_base('views', 17))
 
-            request = '\nPlease select the function you want to perform:\n1. Continue\n2. To the main menu'
+            request = text_base('choices', 15)
             answer = choice(request, 2)
 
             if answer == 1:
                 removal(Human, 'Pass-Card', table)
 
-            elif answer == 2:
-                print('glavv')
 
-
-def main():
-    greetings()
+def main_loop():
+    print('\nWelcome to our database!\n')
     while True:
-        redirect(action_choice(), table_choice())
+        action, table, out = main_menu()
+        if out:
+            break
+        redirect(action, table)
+    print('\nBye!\n')
 
 
-main()
+if __name__ == "__main__":
+    main_loop()
